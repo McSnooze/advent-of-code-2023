@@ -12,39 +12,41 @@ const run = (input) => {
 
   const getEqualRows = (pattern) => {
     return pattern.reduce((rows, row, y) => {
-      if (
-        row.reduce(
-          (isEquals, cell, x) => isEquals && cell === pattern[y + 1]?.[x],
-          true,
-        )
-      ) {
-        rows.push({ rowA: y, rowB: y + 1 });
+      const sum = row.reduce((sum, cell, x) => {
+        if (cell !== pattern[y + 1]?.[x]) {
+          sum++;
+        }
+        return sum;
+      }, 0);
+      if (sum <= 1) {
+        rows.push({ rowA: y, rowB: y + 1, sum });
       }
       return rows;
     }, []);
   };
 
   const isReflection = (pattern, rowA, rowB) => {
+    let sum = 0;
     while (rowA >= 0) {
       const row = pattern[rowA];
       const reflectionRow = pattern[rowB];
 
       if (!reflectionRow) break;
 
-      if (
-        row.reduce(
-          (isEquals, cell, index) => isEquals && cell === reflectionRow[index],
-          true,
-        )
-      ) {
+      sum += row.reduce((sum, cell, index) => {
+        if (cell !== reflectionRow[index]) sum++;
+        return sum;
+      }, 0);
+
+      if (sum <= 1) {
         rowA--;
         rowB++;
       } else {
-        return false;
+        break;
       }
     }
 
-    return true;
+    return sum;
   };
 
   const searchReflection = (pattern) => {
@@ -56,11 +58,11 @@ const run = (input) => {
       return rPattern;
     }, []);
 
-    const rows = getEqualRows(pattern).filter(({ rowA, rowB }) =>
-      isReflection(pattern, rowA, rowB),
+    const rows = getEqualRows(pattern).filter(
+      ({ rowA, rowB }) => isReflection(pattern, rowA, rowB) === 1,
     );
-    const columns = getEqualRows(rPattern).filter(({ rowA, rowB }) =>
-      isReflection(rPattern, rowA, rowB),
+    const columns = getEqualRows(rPattern).filter(
+      ({ rowA, rowB }) => isReflection(rPattern, rowA, rowB) === 1,
     );
 
     return (
